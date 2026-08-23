@@ -228,7 +228,9 @@ class WatchAnalyticsParserFunctions {
 		$text = $wgContLang->convert( $nt->getPrefixedText() );
 
 		$plink = Linker::linkKnown( $nt, htmlspecialchars( $text ) );
-		$token = WatchAction::getWatchToken( $nt, $wgUser );
+		// WatchAction::getWatchToken() was removed in MW 1.38; it wrapped
+		// getEditToken() with the 'watch' salt, which core still validates.
+		$token = $context->getUser()->getEditToken( 'watch' );
 		$wlink = Linker::linkKnown(
 			$nt,
 			$context->msg( 'watch' )->escaped(),
