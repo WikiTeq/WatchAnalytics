@@ -305,7 +305,8 @@ class SpecialPendingReviews extends SpecialPage {
 		} else {
 
 			if ( count( $item->newRevisions ) ) {
-				$previousViewedChange = Revision::newFromRow( $item->newRevisions[0] )->getPrevious();
+				$revStore = MediaWikiServices::getInstance()->getRevisionStore();
+				$previousViewedChange = $revStore->getPreviousRevision( $revStore->newRevisionFromRow( $item->newRevisions[0] ) );
 				if ( $previousViewedChange ) {
 					$prevId = $previousViewedChange->getId();
 					$context = new DerivativeContext( RequestContext::getMain() );
@@ -473,7 +474,8 @@ class SpecialPendingReviews extends SpecialPage {
 
 			// returns essentially the negative-oneth revision...the one before
 			// the wl_notificationtimestamp revision...or null/false if none exists?
-			$mostRecentReviewed = Revision::newFromRow( $item->newRevisions[0] )->getPrevious();
+			$revStore = MediaWikiServices::getInstance()->getRevisionStore();
+			$mostRecentReviewed = $revStore->getPreviousRevision( $revStore->newRevisionFromRow( $item->newRevisions[0] ) );
 		} else {
 			$mostRecentReviewed = false; // no previous revision, the user has not reviewed the first!
 		}
@@ -494,8 +496,9 @@ class SpecialPendingReviews extends SpecialPage {
 			);
 		} else {
 
-			$latest = Revision::newFromTitle( $item->title );
-			$diffURL = $item->title->getLocalURL( [ 'oldid' => $latest->getId() ] );
+			$revStore = MediaWikiServices::getInstance()->getRevisionStore();
+			$latest = $revStore->getKnownCurrentRevision( $item->title );
+			$diffURL = $item->title->getLocalURL( [ 'oldid' => $latest ? $latest->getId() : 0 ] );
 
 			$diffLink = Xml::element( 'a',
 				[ 'href' => $diffURL, 'class' => 'pendingreviews-green-button', 'target' => "_blank" ],
@@ -912,7 +915,7 @@ class SpecialPendingReviews extends SpecialPage {
 				$changeTs = $change->log_timestamp;
 				$changeText = $this->getLogChangeMessage( $change );
 			} else {
-				$rev = Revision::newFromRow( $change );
+				$rev = MediaWikiServices::getInstance()->getRevisionStore()->newRevisionFromRow( $change );
 				$changeTs = $change->rev_timestamp;
 				$userPage = Title::makeTitle( NS_USER, $change->rev_user_text )->getFullText();
 
