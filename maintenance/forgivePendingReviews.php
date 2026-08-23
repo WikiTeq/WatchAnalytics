@@ -108,7 +108,7 @@ class WatchAnalyticsForgivePendingReviews extends Maintenance {
 		$result = $dbw->query( $query );
 		$success = print_r( $result, true );
 		// $count = 0;
-		// while ( $row = $dbw->fetchObject( $result ) ) {
+		// while ( $row = $result->fetchObject() ) {
 			// $count++;
 			// $this->output( "\n{$row->pending_since}: {$row->user_name}: {$row->title}" );
 		// }

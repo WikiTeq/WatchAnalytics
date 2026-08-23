@@ -263,7 +263,7 @@ class SpecialPageStatistics extends SpecialPage {
 		);
 
 		$data = [];
-		while ( $row = $dbr->fetchObject( $res ) ) {
+		while ( $row = $res->fetchObject() ) {
 			$data[ $row->timestamp ] = $row->num_reviewed;
 		}
 
