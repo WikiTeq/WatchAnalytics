@@ -74,7 +74,10 @@ class UserWatchesQuery extends WatchesQuery {
 		if ( $this->userGroupFilter ) {
 			$this->tables['ug'] = 'user_groups';
 			$this->join_conds['ug'] = [
-				'RIGHT JOIN', "w.wl_user = ug.ug_user AND ug.ug_group = \"{$this->userGroupFilter}\""
+				'RIGHT JOIN', [
+					'w.wl_user = ug.ug_user',
+					'ug.ug_group' => $this->userGroupFilter,
+				]
 			];
 
 			$noNullUsers = 'w.wl_user IS NOT NULL';
