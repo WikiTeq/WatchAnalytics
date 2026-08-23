@@ -224,7 +224,11 @@ class SpecialPendingReviews extends SpecialPage {
 		$requestUser = $this->getRequest()->getVal( 'user' );
 		if ( $requestUser ) {
 			$this->mUser = User::newFromName( $requestUser );
-			if ( $this->mUser->getId() === $viewingUser ) {
+			if ( !( $this->mUser instanceof User ) ) {
+				// invalid username requested; fall back to the viewing user
+				$this->mUser = $viewingUser;
+			}
+			if ( $this->mUser->getId() === $viewingUser->getId() ) {
 				$this->mUserIsViewer = true;
 			} else {
 				$this->mUserIsViewer = false;
