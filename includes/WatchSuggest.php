@@ -350,7 +350,7 @@ class WatchSuggest {
 		// action=watch&token=9d1186bca6dd20866e607538b92be6c8%2B%5C
 		$watchLinkURL = $title->getLinkURL( [
 			'action' => 'watch',
-			'token' => WatchAction::getWatchToken( $title, $wgUser ),
+			'token' => $wgUser->getEditToken( 'watch' ),
 		] );
 
 		$watchLink =
