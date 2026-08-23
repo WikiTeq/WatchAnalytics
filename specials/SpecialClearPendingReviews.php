@@ -105,22 +105,24 @@ class SpecialClearPendingReviews extends SpecialPage {
 	 */
 	public static function doSearchQuery( $data, $clearPages ) {
 		$dbw = wfGetDB( DB_MASTER );
-		$category = preg_replace( '/\s+/', '_', $data['category'] );
-		$page = preg_replace( '/\s+/', '_', $data['page'] );
+		$category = preg_replace( '/\s+/', '_', $data['category'] ?? '' );
+		$page = preg_replace( '/\s+/', '_', $data['page'] ?? '' );
 		$start = preg_replace( '/\s+/', '', $data['start'] );
 		$end = preg_replace( '/\s+/', '', $data['end'] );
-		$conditions = '';
 
+		$conditions = [];
 		if ( $category ) {
-			$conditions .= "c.cl_to='$category' AND ";
+			$conditions['c.cl_to'] = $category;
 		}
 		if ( $page ) {
-			$conditions .= "w.wl_title LIKE '$page%' AND ";
+			$conditions[] = 'w.wl_title ' . $dbw->buildLike( $page, $dbw->anyString() );
 		}
 
 		$tables = [ 'w' => 'watchlist', 'p' => 'page', 'c' => 'categorylinks' ];
 		$vars = [ 'w.*' ];
-		$conditions .= "w.wl_notificationtimestamp IS NOT NULL AND w.wl_notificationtimestamp < $end AND w.wl_notificationtimestamp > $start";
+		$conditions[] = 'w.wl_notificationtimestamp IS NOT NULL';
+		$conditions[] = 'w.wl_notificationtimestamp < ' . $dbw->addQuotes( $end );
+		$conditions[] = 'w.wl_notificationtimestamp > ' . $dbw->addQuotes( $start );
 		$join_conds = [
 			'p' => [
 				'LEFT JOIN', 'w.wl_title=p.page_title'

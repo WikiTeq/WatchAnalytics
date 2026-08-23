@@ -128,7 +128,10 @@ class WatchesQuery {
 	public function setCategoryFilterQueryInfo() {
 		$this->tables['cat'] = 'categorylinks';
 		$this->join_conds['cat'] = [
-			'RIGHT JOIN', 'cat.cl_from = p.page_id AND cat.cl_to = "' . $this->categoryFilter . '"'
+			'RIGHT JOIN', [
+				'cat.cl_from = p.page_id',
+				'cat.cl_to' => $this->categoryFilter,
+			]
 		];
 	}
 
