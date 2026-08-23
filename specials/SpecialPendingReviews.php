@@ -195,6 +195,11 @@ class SpecialPendingReviews extends SpecialPage {
 	 * @return bool
 	 */
 	public function handleClearNotification( $clearNotifyTitle ) {
+		// state-changing GET action: require an edit token (CSRF protection)
+		if ( !$this->getUser()->matchEditToken( $this->getRequest()->getVal( 'token' ) ) ) {
+			throw new PermissionsError( 'editmywatchlist' );
+		}
+
 		PendingReview::clearByUserAndTitle( $this->getUser(), $clearNotifyTitle );
 
 		$this->getOutput()->addHTML(
@@ -571,6 +576,7 @@ class SpecialPendingReviews extends SpecialPage {
 				'href' => $this->getPageTitle()->getLocalURL( [
 					'clearNotificationTitle' => $titleText,
 					'clearNotificationNS' => $namespace,
+					'token' => $this->getUser()->getEditToken(),
 				] ),
 				'class' => $buttonClass,
 				'pending-namespace' => $namespace,
