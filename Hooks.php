@@ -272,7 +272,8 @@ class WatchAnalyticsHooks {
 		$isDiff = $wgRequest->getText( 'oldid' );
 		$reviewHandler = ReviewHandler::setup( $user, $title, $isDiff );
 
-		if ( $reviewHandler::pageIsBeingReviewed() ) {
+		// setup() returns false for unwatchable titles; guard before use
+		if ( $reviewHandler instanceof ReviewHandler && $reviewHandler->pageIsBeingReviewed() ) {
 
 			global $wgOut;
 
