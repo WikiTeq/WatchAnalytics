@@ -76,7 +76,7 @@ class WatchAnalyticsParserFunctions {
 		$output .= "! Category !! Number of Under-watched pages\n";
 
 		$categories = [];
-		while ( $row = $dbr->fetchObject( $result ) ) {
+		while ( $row = $result->fetchObject() ) {
 			$pageCategories = explode( ';', $row->categories );
 
 			foreach ( $pageCategories as $cat ) {
@@ -189,7 +189,7 @@ class WatchAnalyticsParserFunctions {
 
 		$result = $dbr->query( $query );
 		$output = '';
-		while ( $row = $dbr->fetchObject( $result ) ) {
+		while ( $row = $result->fetchObject() ) {
 			// $title = Title::makeTitle( $row->page_namespace, $row->page_title );
 			// $watchURL = $title->getFullURL( array( 'action' => 'watch' ) );
 			// $output .= "* [[$title]] - '''[$watchURL watch]'''\n";
