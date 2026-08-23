@@ -39,6 +39,10 @@ class SpecialPageStatistics extends SpecialPage {
 
 			$unReviewTimestamp = $wgRequest->getVal( 'unreview' );
 			if ( $unReviewTimestamp ) {
+				// state-changing GET action: require an edit token (CSRF protection)
+				if ( !$wgUser->matchEditToken( $wgRequest->getVal( 'token' ) ) ) {
+					throw new PermissionsError( 'editmywatchlist' );
+				}
 				$rh = new ReviewHandler( $wgUser, $this->mTitle, $wgRequest );
 				$rh->resetNotificationTimestamp( $unReviewTimestamp );
 				$wgOut->addModuleStyles( [ 'ext.watchanalytics.reviewhandler.styles' ] );

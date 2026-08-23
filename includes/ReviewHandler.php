@@ -128,7 +128,8 @@ class ReviewHandler {
 		// used if user right-clicks link and opens in new tab
 		$unReviewURL = SpecialPage::getTitleFor( 'PageStatistics' )->getInternalURL( [
 			'page' => $this->title->getPrefixedText(),
-			'unreview' => $this->initial
+			'unreview' => $this->initial,
+			'token' => $this->user->getEditToken()
 		] );
 
 		$unReviewLink = Xml::element(
