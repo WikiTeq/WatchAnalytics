@@ -96,21 +96,20 @@ class WatchAnalyticsAddCategoryToWatchlist extends Maintenance {
 			$titleArray = $category->getMembers();
 
 			while ( $titleArray->valid() ) {
-				$this->output( "\nAdding watchers to [[" . $titleArray->current->getFullText() . "]]...\n" );
+				$currentTitle = $titleArray->current();
+				$this->output( "\nAdding watchers to [[" . $currentTitle->getFullText() . "]]...\n" );
 
 				foreach ( $users as $user ) {
 					$this->output( "    ...checking " . $user->getName() . "... " );
 
-					$watchedItem = WatchedItem::fromUserTitle(
-						$user,
-						$titleArray->current,
-						WatchedItem::IGNORE_USER_RIGHTS
-					);
+					// WatchedItem::fromUserTitle() removed in MW 1.31; use
+					// WatchedItemStore::isWatched()/addWatch() instead.
+					$watchedItemStore = MediaWikiServices::getInstance()->getWatchedItemStore();
 
-					if ( $watchedItem->isWatched() ) {
+					if ( $watchedItemStore->isWatched( $user, $currentTitle ) ) {
 						$this->output( "already watching\n" );
 					} else {
-						$watchedItem->addWatch();
+						$watchedItemStore->addWatch( $user, $currentTitle );
 						$this->output( "added to watchlist\n" );
 					}
 				}

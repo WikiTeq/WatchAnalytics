@@ -326,8 +326,9 @@ class PendingReview {
 	 * @return string HTML for row
 	 */
 	public function clearByUserAndTitle( $user, $title ) {
-		$watch = WatchedItem::fromUserTitle( $user, $title );
-		$watch->resetNotificationTimestamp();
+		// WatchedItem::fromUserTitle() removed in MW 1.31; use the store.
+		MediaWikiServices::getInstance()->getWatchedItemStore()
+			->resetNotificationTimestamp( $user, $title );
 
 		// $wgOut->addHTML(
 		// wfMessage(
