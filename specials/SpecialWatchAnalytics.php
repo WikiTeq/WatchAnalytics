@@ -179,7 +179,7 @@ class SpecialWatchAnalytics extends SpecialPage {
 			$html .= $body;
 			$html .= $tablePager->getNavigationBar();
 		} else {
-			$html .= '<p>' . wfMsgHTML( 'listusers-noresult' ) . '</p>';
+			$html .= '<p>' . $this->msg( 'listusers-noresult' )->escaped() . '</p>';
 		}
 		$wgOut->addHTML( $html );
 		return true;
@@ -287,7 +287,13 @@ class SpecialWatchAnalytics extends SpecialPage {
 		}
 
 		$json = [ "nodes" => $nodes, "links" => $links ];
-		$json = json_encode( $json ); // , JSON_PRETTY_PRINT );
+		// JSON_HEX_TAG prevents </script> breakouts from usernames/titles
+		// (legal per MW validation) embedded in this text/template block;
+		// JSON.parse() on the client decodes hex escapes transparently.
+		$json = json_encode(
+			$json,
+			JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
+		);
 
 		$html = '<h3>' . wfMessage( 'watchanalytics-watch-forcegraph-header' )->text() . '</h3>';
 		$html .= '<p>' . wfMessage( 'watchanalytics-watch-forcegraph-description' )->text() . '</p>';
