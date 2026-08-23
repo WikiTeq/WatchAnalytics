@@ -37,13 +37,33 @@ class ReviewHandler {
 	}
 
 	public static function setup( User $user, Title $title, $isDiff ) {
-		if ( ! $title->isWatchable() ) {
+		if ( ! self::isWatchable( $title ) ) {
 			self::$isReviewable = false;
 			return false;
 		}
 		self::$pageLoadHandler = new self ( $user, $title, $isDiff );
 		self::$pageLoadHandler->initial = self::$pageLoadHandler->getReviewStatus();
 		return self::$pageLoadHandler;
+	}
+
+	/**
+	 * Whether the given title can be watched. Replaces Title::isWatchable(),
+	 * which was removed in MediaWiki 1.38. Uses NamespaceInfo::isWatchable()
+	 * (MW 1.34+) with a fallback to the old talk-namespace heuristic for
+	 * older branches.
+	 *
+	 * @param Title $title
+	 * @return bool
+	 */
+	public static function isWatchable( Title $title ) {
+		if ( method_exists( MediaWikiServices::class, 'getNamespaceInfo' ) ) {
+			// MW 1.34+
+			return MediaWikiServices::getInstance()
+				->getNamespaceInfo()
+				->isWatchable( $title->getNamespace() );
+		}
+		// pre-1.34 fallback: mirrors the removed Title::isWatchable() logic
+		return ! $title->isTalkPage();
 	}
 
 	/**
