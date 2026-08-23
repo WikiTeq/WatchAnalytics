@@ -1,5 +1,7 @@
 <?php
 
+use MediaWiki\User\ActorMigration;
+
 class SpecialPageStatistics extends SpecialPage {
 
 	public $mMode;
@@ -121,14 +123,24 @@ class SpecialPageStatistics extends SpecialPage {
 		#
 		# Page editors query
 		#
+
+		// The rev_user / rev_user_text columns were removed in MW 1.39
+		// (actor migration); build those fields via ActorMigration so the
+		// query works against the current revision schema, keeping the
+		// legacy row property names for the consumer code below.
+		$revUserJoin = ActorMigration::getInstance()->getJoin( 'rev_user' );
+		$revUserTextJoin = ActorMigration::getInstance()->getJoin( 'rev_user_text' );
+
 		$res = $dbr->select(
 			[
 				'rev' => 'revision',
 				'p' => 'page',
-			],
+			]
+			+ $revUserJoin['tables']
+			+ $revUserTextJoin['tables'],
 			[
-				'rev.rev_user',
-				'rev.rev_user_text',
+				$revUserJoin['fields']['rev_user'] . ' AS rev_user',
+				$revUserTextJoin['fields']['rev_user_text'] . ' AS rev_user_text',
 				'COUNT( * ) AS num_revisions',
 			],
 			[
@@ -137,7 +149,8 @@ class SpecialPageStatistics extends SpecialPage {
 			],
 			__METHOD__,
 			[
-				'GROUP BY' => 'rev.rev_user',
+				'GROUP BY' => $revUserJoin['fields']['rev_user']
+					. ', ' . $revUserTextJoin['fields']['rev_user_text'],
 				'ORDER BY' => 'num_revisions DESC',
 			],
 			[
@@ -145,6 +158,8 @@ class SpecialPageStatistics extends SpecialPage {
 					'LEFT JOIN', 'p.page_id = rev.rev_page'
 				],
 			]
+			+ $revUserJoin['joins']
+			+ $revUserTextJoin['joins']
 		);
 
 		#
