@@ -162,8 +162,7 @@ class WatchAnalyticsParserFunctions {
 						p.page_title AS page_title,
 						p.page_namespace AS page_namespace,
 						SUM( IF(w.wl_title IS NOT NULL, 1, 0) ) AS num_watches,
-						SUM( IF(w.wl_user = $wgUserId, 1, 0) ) AS wg_user_watches,
-						p.page_counter / SUM( IF(w.wl_title IS NOT NULL, 1, 0) ) AS view_watch_ratio
+						SUM( IF(w.wl_user = $wgUserId, 1, 0) ) AS wg_user_watches
 					FROM
 						watchlist AS w
 					LEFT JOIN page AS p ON
@@ -178,7 +177,7 @@ class WatchAnalyticsParserFunctions {
 					GROUP BY
 						p.page_title, p.page_namespace
 					ORDER BY
-						view_watch_ratio DESC
+						num_watches ASC
 				) AS tmp
 				WHERE
 					num_watches <= $maxWatchers
