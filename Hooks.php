@@ -137,7 +137,8 @@ class WatchAnalyticsHooks {
 	}
 
 	/**
-	 * Handler for TitleMoveComplete hook. This function makes it so page-moves
+	 * Handler for PageMoveComplete hook (the replacement for the removed
+	 * TitleMoveComplete hook). This function makes it so page-moves
 	 * are handled correctly in the `watchlist` table. Prior to a MW 1.25 alpha
 	 * release when a page is moved, the new entries into the `watchlist` table
 	 * are given an notification timestamp of NULL; they should be identical to
@@ -148,27 +149,41 @@ class WatchAnalyticsHooks {
 	 * @todo FIXME: make this work for <1.25 and 1.25+
 	 * @todo document which commit fixes this issue specifically.
 	 *
-	 * @see http://www.mediawiki.org/wiki/Manual:Hooks/TitleMoveComplete
+	 * @see https://www.mediawiki.org/wiki/Manual:Hooks/PageMoveComplete
 	 *
-	 * @param Title &$originalTitle
-	 * @param Title &$newTitle
-	 * @param User &$user
-	 * @param int $oldid
-	 * @param int $newid
-	 * @param FIXME string|null $reason
+	 * @param LinkTarget $old
+	 * @param LinkTarget $new
+	 * @param UserIdentity $user
+	 * @param int $pageid
+	 * @param int $redirid
+	 * @param string $reason
 	 *
 	 * @return bool true in all cases
 	 */
-	public static function onTitleMoveComplete( Title &$originalTitle, Title &$newTitle,
-			User &$user, $oldid, $newid, $reason = null ) {
+	public static function onPageMoveComplete( $old, $new, $user, $pageid,
+			$redirid, $reason = null ) {
+		$originalTitle = Title::newFromLinkTarget( $old );
+		$newTitle = Title::newFromLinkTarget( $new );
+
 		#
 		# Record move in watch stats
 		#
-		WatchStateRecorder::recordPageChange( Article::newFromID( $oldid ) );
+
+		// Article::newFromID() was removed from core; record against a
+		// WikiPage built directly from the moved page's ID instead.
+		if ( $pageid > 0 ) {
+			$oldPage = WikiPage::newFromID( $pageid, WikiPage::READ_LATEST );
+			if ( $oldPage ) {
+				WatchStateRecorder::recordPageChange( $oldPage );
+			}
+		}
 
 		// if a redirect was created, record data for the "new" page (the redirect)
-		if ( $newid > 0 ) {
-			WatchStateRecorder::recordPageChange( Article::newFromID( $newid ) );
+		if ( $redirid > 0 ) {
+			$newPage = WikiPage::newFromID( $redirid, WikiPage::READ_LATEST );
+			if ( $newPage ) {
+				WatchStateRecorder::recordPageChange( $newPage );
+			}
 		}
 
 		#
@@ -295,17 +310,17 @@ class WatchAnalyticsHooks {
 	 * new state of "watches" and "reviews" to be recorded for the page and all
 	 * of its watchers.
 	 *
-	 * Additional parameters available include: User $user, Content $content,
-	 * string $summary, boolean $isMinor, boolean $isWatch, $section Deprecated,
-	 * integer $flags, {Revision|null} $revision, Status $status, integer $baseRevId
+	 * Handler for PageSaveComplete, the replacement (MW 1.35+) for the removed
+	 * PageContentSaveComplete hook. The WikiPage parameter is unchanged, so
+	 * the original handler body carries over directly.
 	 *
-	 * @see https://www.mediawiki.org/wiki/Manual:Hooks/PageContentSaveComplete
+	 * @see https://www.mediawiki.org/wiki/Manual:Hooks/PageSaveComplete
 	 *
 	 * @param WikiPage $wikipage
 	 *
 	 * @return bool
 	 */
-	public static function onPageContentSaveComplete( WikiPage $wikipage ) {
+	public static function onPageSaveComplete( WikiPage $wikipage ) {
 		WatchStateRecorder::recordPageChange( $wikipage );
 		return true;
 	}

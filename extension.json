@@ -168,14 +168,14 @@
 		"ParserFirstCallInit": [
 			"WatchAnalyticsParserFunctions::setup"
 		],
-		"TitleMoveComplete": [
-			"WatchAnalyticsHooks::onTitleMoveComplete"
+		"PageMoveComplete": [
+			"WatchAnalyticsHooks::onPageMoveComplete"
 		],
 		"PageViewUpdates": [
 			"WatchAnalyticsHooks::onPageViewUpdates"
 		],
-		"PageContentSaveComplete": [
-			"WatchAnalyticsHooks::onPageContentSaveComplete"
+		"PageSaveComplete": [
+			"WatchAnalyticsHooks::onPageSaveComplete"
 		],
 		"MagicWordwgVariableIDs": [
 			"WatchAnalyticsHooks::addMagicWordVariableIDs"
